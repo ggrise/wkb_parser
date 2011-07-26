@@ -74,20 +74,22 @@ parse_geometry(<<1, Type:32/unsigned-integer-little, Geom/binary>>) ->
 
 %WKBPoint
 parse_geometry(big, false, 'Point', <<X:64/float-big, Y:64/float-big, R/binary>>) ->
-	{{X, Y}, R};
+	{{'Point', {X, Y}}, R};
 parse_geometry(little, false,  'Point', <<X:64/float-little, Y:64/float-little, R/binary>>) ->
-	{{X, Y}, R};
+	{{'Point', {X, Y}}, R};
 parse_geometry(big, true, 'Point', <<X:64/float-big, Y:64/float-big, Z:64/float-big, R/binary>>) ->
-	{{X, Y, Z}, R};
+	{{'Point', {X, Y, Z}}, R};
 parse_geometry(little, true,  'Point', <<X:64/float-little, Y:64/float-little, Z:64/float-little, R/binary>>) ->
-	{{X, Y, Z}, R};
+	{{'Point', {X, Y, Z}}, R};
 
 
 %WKBLineString
 parse_geometry(big, HasZ, 'LineString', <<NumPoints:32/unsigned-integer-big, Points/binary>>) ->
-	parse_linestring(big, HasZ, NumPoints, Points, []);
+	{LS, R} = parse_linestring(big, HasZ, NumPoints, Points, []),
+	{{'LineString', LS}, R};
 parse_geometry(little, HasZ, 'LineString', <<NumPoints:32/unsigned-integer-little, Points/binary>>) ->
-	parse_linestring(little, HasZ, NumPoints, Points, []);
+	{LS, R} = parse_linestring(little, HasZ, NumPoints, Points, []),
+	{{'LineString', LS}, R};
 
 %WKBPolygon
 parse_geometry(big, HasZ, 'Polygon', <<NumRings:32/unsigned-integer-big, Rings/binary>>) ->
@@ -133,5 +135,6 @@ parse_multi(_, 0, R, Acc) ->
 parse_multi(_, _, <<>>, Acc) ->
 	{lists:reverse(Acc), <<>>};
 parse_multi(Z, Num, Geoms, Acc) ->
+	io:format("~p~n", [Geoms]),
 	{_Srid, {Geom, Remain}} = parse_geometry(Geoms),	
-	parse_multi(Z, Num, Remain, [Geom|Acc]).
+	parse_multi(Z, Num-1, Remain, [Geom|Acc]).

@@ -135,6 +135,5 @@ parse_multi(_, 0, R, Acc) ->
 parse_multi(_, _, <<>>, Acc) ->
 	{lists:reverse(Acc), <<>>};
 parse_multi(Z, Num, Geoms, Acc) ->
-	io:format("~p~n", [Geoms]),
 	{_Srid, {Geom, Remain}} = parse_geometry(Geoms),	
 	parse_multi(Z, Num-1, Remain, [Geom|Acc]).
